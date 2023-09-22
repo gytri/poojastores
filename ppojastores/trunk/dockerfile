@@ -1,10 +1,12 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
-WORKDIR /source
-COPY . .
-RUN dotnet publish -c release -o /app
-
-FROM mcr.microsoft.com/dotnet/aspnet:5.0
+FROM mcr.microsoft.com/dotnet/core/sdk:5.0 AS build-env
 WORKDIR /app
-COPY --from=build /app ./
+COPY *.csproj ./
+RUN   dotnet restore
+COPY . ./
+RUN dotnet publish -c release -o output
+# Runtime images
+FROM mcr.microsoft.com/dotnet/core/aspnet:5.0
+WORKDIR /app
+COPY --from=build-env /app/output
 EXPOSE 80
 ENTRYPOINT ["dotnet", "ppojastores.d11"]
